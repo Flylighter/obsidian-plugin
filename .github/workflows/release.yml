@@ -21,6 +21,10 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+    - name: Get version
+      id: extract_version
+      run: echo "::set-output name=version::$(jq -r '.version' manifest.json)"
+
     - name: Build plugin
       run: node esbuild.config.mjs production
 
@@ -30,7 +34,10 @@ jobs:
           echo "Error: Directory 'flylighter' does not exist."
           exit 1
         fi
-        version=$(jq -r '.version' manifest.json)
+
+    - name: Zip build folder
+      run: |
+        version=${{ steps.extract_version.outputs.version }}
         zip -r "flylighter_obsidian-plugin_${version}.zip" flylighter
 
     - name: Upload build artifact
