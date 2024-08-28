@@ -30,14 +30,7 @@ jobs:
           echo "Error: Directory 'flylighter' does not exist."
           exit 1
         fi
-
-    - name: Get version
-      id: extract_version
-      run: echo "::set-output name=version::$(jq -r '.version' manifest.json)"
-
-    - name: Zip build folder
-      run: |
-        version=${{ steps.extract_version.outputs.version }}
+        version=$(jq -r '.version' manifest.json)
         zip -r "flylighter_obsidian-plugin_${version}.zip" flylighter
 
     - name: Upload build artifact
@@ -59,6 +52,11 @@ jobs:
       with:
         node-version: '16'
 
+    - name: Download build artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: build-zip
+
     - name: Get version
       id: extract_version
       run: echo "::set-output name=version::$(jq -r '.version' manifest.json)"
@@ -66,11 +64,6 @@ jobs:
     - name: Get merge commit messages
       id: get_commits
       run: echo "::set-output name=commits::$(git log --merges -1 --pretty=format:'%b')"
-
-    - name: Download build artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: build-zip
 
     - name: Create Release
       id: create_release
