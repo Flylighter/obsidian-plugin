@@ -1,7 +1,7 @@
 {
 	"id": "flylighter",
 	"name": "Flylighter",
-	"version": "1.0.1",
+	"version": "0.0.2",
 	"minAppVersion": "0.15.1",
 	"description": "An Obsidian companion plugin for Flylighter",
 	"author": "Eli Wimmer",
