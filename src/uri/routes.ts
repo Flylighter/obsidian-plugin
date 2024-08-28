@@ -26,7 +26,7 @@ export const routes = [
     method: "GET",
     handler: (app: ActualApp) => {
       return async (params: any) => {
-        let files = Object.values(app.vault.fileMap);
+        let files = Object.values(app.vault.fileMap) as ActualTFile[];
         for (let file of files) {
           file.parent = null;
           file.vault = null;
@@ -114,7 +114,7 @@ export const routes = [
         let pre_templates =
           app.plugins.plugins?.["templater-obsidian"]?.settings
             ?.folder_templates;
-        let templates = pre_templates.map((template) => {
+        let templates = pre_templates.map((template: any) => {
           console.log("template", template);
           console.log(
             "properties",
