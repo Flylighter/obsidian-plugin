@@ -26,7 +26,7 @@ export const routes = [
     method: "GET",
     handler: (app: ActualApp) => {
       return async (params: any) => {
-        let files = Object.values(app.vault.fileMap) as ActualTFile[];
+        let files = Object.values(app.metadataCache.vault.fileMap) as ActualTFile[];
         for (let file of files) {
           file.parent = null;
           file.vault = null;
@@ -91,9 +91,6 @@ export const routes = [
         let vaultInfo = app.vault.getConfig();
         console.log("vaultInfo", vaultInfo);
         let vaultName = app.vault.getName();
-        console.log("vaultName", vaultName);
-        let getFoldd = app.vault.getAllFolders();
-        console.log("getFoldd", getFoldd);
         let actualInfo = app.vault.config;
         console.log("actualInfo", actualInfo);
 
@@ -115,23 +112,6 @@ export const routes = [
           app.plugins.plugins?.["templater-obsidian"]?.settings
             ?.folder_templates;
         let templates = pre_templates.map((template: any) => {
-          console.log("template", template);
-          console.log(
-            "properties",
-            app.metadataCache.getCache(template.template)?.frontmatter
-          );
-          console.log(
-            "app.metadataCache.getFileInfo",
-            app.metadataCache.getFileInfo(template.template)
-          );
-          console.log(
-            "app.metadataCache.getFileCache",
-            app.metadataCache.getFileCache(template.template)
-          );
-          console.log(
-            "app.vault.getAbstractFileByPath",
-            app.vault.getAbstractFileByPath(template.template)
-          );
           return {
             path: template.folder,
             file: template.template,

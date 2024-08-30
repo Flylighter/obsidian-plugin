@@ -40,5 +40,6 @@ declare global {
     getFrontmatterPropertyValuesForKey(key: string): string[];
     getTags(): TagsReturnType;
     getFileInfo(file: ActualTFile): any;
+    vault: ActualVault;
   }
 }
