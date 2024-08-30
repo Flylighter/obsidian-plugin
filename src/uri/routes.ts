@@ -13,9 +13,7 @@ export const routes = [
     handler: (app: ActualApp) => {
       return async (params: any) => {
         console.log("params", params);
-        console.log(app);
         let tags = app.metadataCache.getTags();
-        console.log("tags", tags);
         callback(params["x-success"], tags);
       };
     },
@@ -32,7 +30,6 @@ export const routes = [
           file.vault = null;
           file.children = null;
         }
-        console.log("files", files);
         callback(params["x-success"], files);
       };
     },
@@ -44,14 +41,12 @@ export const routes = [
     handler: (app: ActualApp) => {
       return async (params: any) => {
         let properties = app.metadataCache.getAllPropertyInfos();
-        console.log("properties", properties);
         let propertiesWithOptions = Object.values(properties).map((prop) => {
           let options = app.metadataCache.getFrontmatterPropertyValuesForKey(
             prop.name
           );
           return { ...prop, options };
         });
-        console.log("propertiesWithOptions", propertiesWithOptions);
         callback(params["x-success"], propertiesWithOptions);
       };
     },
@@ -64,10 +59,7 @@ export const routes = [
       return async (params: any) => {
         let iconicPluginSettings =
           app.plugins.plugins?.["iconic"]?.settings?.fileIcons;
-        let directories = Object.values(app.vault.fileMap)
-          .filter(
-            (file) => !file.extension && file.path !== "/" && !file.deleted
-          )
+        let directories = Object.values(app.vault.getAllFolders())
           .map((fi) => {
             return {
               name: fi.name,
@@ -75,7 +67,6 @@ export const routes = [
               icon: iconicPluginSettings?.[fi.path]?.icon ?? "folder",
             };
           });
-        console.log("directories", directories);
         callback(params["x-success"], directories);
       };
     },
@@ -131,7 +122,6 @@ export const routes = [
     handler: (app: ActualApp) => {
       return async (params: any) => {
         try {
-          console.log("data", params);
           let pathy: string = "";
           let filey: string = "";
           let datay: string = "";
@@ -143,9 +133,6 @@ export const routes = [
           }
           datay = params.data;
           if (!pathy && !filey && !datay) return;
-          console.log("pathy", pathy);
-          console.log("filey", filey);
-          console.log("datay", datay);
           let filePathFull = pathy + "/" + filey;
           await app.vault.create(filePathFull, datay);
           // let createdFileUrl = encodeURIComponent(`obsidian://open?vault=${app.vault.getName()}&file=${createdFile.path}`);
