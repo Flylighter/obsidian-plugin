@@ -176,10 +176,47 @@ var routes = [
             return;
           let filePathFull = pathy + "/" + filey;
           let createdFile = await _app.vault.create(filePathFull, datay);
-          let createdFileUrl = encodeURIComponent(`obsidian://open?vault=${_app.vault.getName()}&file=${createdFile.path}`);
+          let createdFileUrl = encodeURIComponent(
+            `obsidian://open?vault=${_app.vault.getName()}&file=${createdFile.path}`
+          );
           callback(params["x-success"], createdFileUrl);
           if (params.openBehavior === "openInObsidian") {
             (_a = _app.workspace.getMostRecentLeaf()) == null ? void 0 : _a.openFile(createdFile);
+          }
+        } catch (e) {
+          callback(params["x-error"], e);
+        }
+      };
+    }
+  },
+  {
+    path: "/capture/append",
+    params: ["path", "data"],
+    method: "GET",
+    handler: (_app) => {
+      return async (params) => {
+        var _a;
+        try {
+          let pathy = "";
+          let filey = "";
+          let datay = "";
+          if (params.pathy) {
+            pathy = decodeURIComponent(params.pathy);
+          }
+          if (params.file) {
+            filey = decodeURIComponent(params.file);
+          }
+          datay = params.data;
+          if (!pathy && !filey && !datay)
+            return;
+          let filePathFull = _app.vault.getFileByPath(pathy);
+          let createdFile = await _app.vault.append(filePathFull, datay);
+          let createdFileUrl = encodeURIComponent(
+            `obsidian://open?vault=${_app.vault.getName()}&file=${filePathFull.path}`
+          );
+          callback(params["x-success"], createdFileUrl);
+          if (params.openBehavior === "openInObsidian") {
+            (_a = _app.workspace.getMostRecentLeaf()) == null ? void 0 : _a.openFile(filePathFull);
           }
         } catch (e) {
           callback(params["x-error"], e);

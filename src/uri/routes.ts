@@ -178,7 +178,7 @@ export const routes = [
           }
           datay = params.data;
           if (!pathy && !filey && !datay) return;
-          let filePathFull = _app.vault.getFileByPath(pathy + "/" + filey);
+          let filePathFull = _app.vault.getFileByPath(pathy);
           let createdFile = await _app.vault.append(filePathFull, datay);
           let createdFileUrl = encodeURIComponent(
             `obsidian://open?vault=${_app.vault.getName()}&file=${
