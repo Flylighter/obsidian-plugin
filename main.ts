@@ -30,7 +30,6 @@ export default class FlylighterPlugin extends Plugin {
 
   async onload() {
     let _app = this.app as ActualApp;
-    let _vault = _app.vault as ActualVault;
     // await this.loadSettings();
 
     // This creates an icon in the left ribbon.

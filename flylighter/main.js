@@ -41,11 +41,10 @@ var routes = [
     path: "/tags",
     params: [],
     method: "GET",
-    handler: (app) => {
+    handler: (_app) => {
       return async (params) => {
         console.log("params", params);
-        console.log("app", app);
-        let tags = app.metadataCache.getTags();
+        let tags = _app.metadataCache.getTags();
         callback(params["x-success"], tags);
       };
     }
@@ -54,14 +53,21 @@ var routes = [
     path: "/files",
     params: [],
     method: "GET",
-    handler: (app) => {
+    handler: (_app) => {
       return async (params) => {
-        let files = Object.values(app.vault.getMarkdownFiles());
-        for (let file of files) {
-          file.parent = null;
-          file.vault = null;
-          file.children = null;
-        }
+        console.log("app", _app);
+        let getFiles = Object.values(
+          _app.vault.getMarkdownFiles()
+        );
+        let files = getFiles.map((file) => {
+          return {
+            basename: file.basename,
+            extension: file.extension,
+            path: file.path,
+            name: file.name,
+            stat: file.stat
+          };
+        });
         callback(params["x-success"], files);
       };
     }
@@ -70,14 +76,14 @@ var routes = [
     path: "/properties",
     params: [],
     method: "GET",
-    handler: (app) => {
+    handler: (_app) => {
       return async (params) => {
         let cachedPropertyOptions = {};
-        let properties = app.metadataCache.getAllPropertyInfos();
+        let properties = _app.metadataCache.getAllPropertyInfos();
         let propertiesWithOptions = Object.values(properties).map((prop) => {
           if (cachedPropertyOptions["prop.name"])
             return { ...prop, options: cachedPropertyOptions["prop.name"] };
-          let options = app.metadataCache.getFrontmatterPropertyValuesForKey(
+          let options = _app.metadataCache.getFrontmatterPropertyValuesForKey(
             prop.name
           );
           if (options)
@@ -92,18 +98,20 @@ var routes = [
     path: "/directories",
     params: [],
     method: "GET",
-    handler: (app) => {
+    handler: (_app) => {
       return async (params) => {
         var _a, _b, _c;
-        let iconicPluginSettings = (_c = (_b = (_a = app.plugins.plugins) == null ? void 0 : _a["iconic"]) == null ? void 0 : _b.settings) == null ? void 0 : _c.fileIcons;
-        let directories = Object.values(app.vault.getAllFolders(false)).map((fi) => {
-          var _a2, _b2;
-          return {
-            name: fi.name,
-            path: fi.path,
-            icon: (_b2 = (_a2 = iconicPluginSettings == null ? void 0 : iconicPluginSettings[fi.path]) == null ? void 0 : _a2.icon) != null ? _b2 : "folder"
-          };
-        });
+        let iconicPluginSettings = (_c = (_b = (_a = _app.plugins.plugins) == null ? void 0 : _a["iconic"]) == null ? void 0 : _b.settings) == null ? void 0 : _c.fileIcons;
+        let directories = Object.values(_app.vault.getAllFolders(false)).map(
+          (fi) => {
+            var _a2, _b2;
+            return {
+              name: fi.name,
+              path: fi.path,
+              icon: (_b2 = (_a2 = iconicPluginSettings == null ? void 0 : iconicPluginSettings[fi.path]) == null ? void 0 : _a2.icon) != null ? _b2 : "folder"
+            };
+          }
+        );
         callback(params["x-success"], directories);
       };
     }
@@ -112,16 +120,14 @@ var routes = [
     path: "/vault/info",
     params: [],
     method: "GET",
-    handler: (app) => {
+    handler: (_app) => {
       return async (params) => {
-        let hasPeriodicNotes = app.plugins.enabledPlugins.has("periodic-notes");
+        let hasPeriodicNotes = _app.plugins.enabledPlugins.has("periodic-notes");
         console.log("hasPeriodicNotes", hasPeriodicNotes);
-        let vaultName = app.vault.getName();
-        let actualInfo = app.vault.config;
-        console.log("actualInfo", actualInfo);
+        let vaultName = _app.vault.getName();
         let returnInfo = {
           name: vaultName,
-          id: app.appId
+          id: _app.appId
         };
         callback(params["x-success"], returnInfo);
       };
@@ -131,16 +137,16 @@ var routes = [
     path: "/templates",
     params: [],
     method: "GET",
-    handler: (app) => {
+    handler: (_app) => {
       return async (params) => {
         var _a, _b, _c;
-        let pre_templates = (_c = (_b = (_a = app.plugins.plugins) == null ? void 0 : _a["templater-obsidian"]) == null ? void 0 : _b.settings) == null ? void 0 : _c.folder_templates;
+        let pre_templates = (_c = (_b = (_a = _app.plugins.plugins) == null ? void 0 : _a["templater-obsidian"]) == null ? void 0 : _b.settings) == null ? void 0 : _c.folder_templates;
         let templates = pre_templates.map((template) => {
           var _a2;
           return {
             path: template.folder,
             file: template.template,
-            properties: (_a2 = app.metadataCache.getCache(template.template)) == null ? void 0 : _a2.frontmatter
+            properties: (_a2 = _app.metadataCache.getCache(template.template)) == null ? void 0 : _a2.frontmatter
           };
         });
         console.log("templates", templates);
@@ -152,7 +158,7 @@ var routes = [
     path: "/capture/page",
     params: ["path", "data"],
     method: "GET",
-    handler: (app) => {
+    handler: (_app) => {
       return async (params) => {
         try {
           let pathy = "";
@@ -168,7 +174,7 @@ var routes = [
           if (!pathy && !filey && !datay)
             return;
           let filePathFull = pathy + "/" + filey;
-          await app.vault.create(filePathFull, datay);
+          await _app.vault.create(filePathFull, datay);
         } catch (e) {
         }
       };
@@ -180,7 +186,6 @@ var routes = [
 var FlylighterPlugin = class extends import_obsidian.Plugin {
   async onload() {
     let _app = this.app;
-    let _vault = _app.vault;
     routes.forEach((route) => {
       this.registerObsidianProtocolHandler(
         "flylighter" + route.path,

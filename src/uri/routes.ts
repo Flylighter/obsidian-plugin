@@ -1,3 +1,5 @@
+import { basename } from "path";
+
 function callback(url: string, data: any) {
   let formatData = JSON.stringify(data);
   let encodedData = encodeURIComponent(formatData);
@@ -10,11 +12,10 @@ export const routes = [
     path: "/tags",
     params: [],
     method: "GET",
-    handler: (app: ActualApp) => {
+    handler: (_app: ActualApp) => {
       return async (params: any) => {
         console.log("params", params);
-        console.log("app",app)
-        let tags = app.metadataCache.getTags();
+        let tags = _app.metadataCache.getTags();
         callback(params["x-success"], tags);
       };
     },
@@ -23,14 +24,21 @@ export const routes = [
     path: "/files",
     params: [],
     method: "GET",
-    handler: (app: ActualApp) => {
+    handler: (_app: ActualApp) => {
       return async (params: any) => {
-        let files = Object.values(app.vault.getMarkdownFiles()) as ActualTFile[];
-        for (let file of files) {
-          file.parent = null;
-          file.vault = null;
-          file.children = null;
-        }
+        console.log("app", _app);
+        let getFiles = Object.values(
+          _app.vault.getMarkdownFiles()
+        ) as ActualTFile[];
+        let files = getFiles.map((file) => {
+          return {
+            basename: file.basename,
+            extension: file.extension,
+            path: file.path,
+            name: file.name,
+            stat: file.stat,
+          };
+        });
         callback(params["x-success"], files);
       };
     },
@@ -39,16 +47,17 @@ export const routes = [
     path: "/properties",
     params: [],
     method: "GET",
-    handler: (app: ActualApp) => {
+    handler: (_app: ActualApp) => {
       return async (params: any) => {
-        let cachedPropertyOptions: Record<string, any> = {}
-        let properties = app.metadataCache.getAllPropertyInfos();
+        let cachedPropertyOptions: Record<string, any> = {};
+        let properties = _app.metadataCache.getAllPropertyInfos();
         let propertiesWithOptions = Object.values(properties).map((prop) => {
-          if (cachedPropertyOptions['prop.name']) return { ...prop, options: cachedPropertyOptions['prop.name'] }
-          let options = app.metadataCache.getFrontmatterPropertyValuesForKey(
+          if (cachedPropertyOptions["prop.name"])
+            return { ...prop, options: cachedPropertyOptions["prop.name"] };
+          let options = _app.metadataCache.getFrontmatterPropertyValuesForKey(
             prop.name
           );
-          if (options) cachedPropertyOptions[prop.name] = options
+          if (options) cachedPropertyOptions[prop.name] = options;
           return { ...prop, options };
         });
         callback(params["x-success"], propertiesWithOptions);
@@ -59,18 +68,19 @@ export const routes = [
     path: "/directories",
     params: [],
     method: "GET",
-    handler: (app: ActualApp) => {
+    handler: (_app: ActualApp) => {
       return async (params: any) => {
         let iconicPluginSettings =
-          app.plugins.plugins?.["iconic"]?.settings?.fileIcons;
-        let directories = Object.values(app.vault.getAllFolders(false))
-          .map((fi) => {
+          _app.plugins.plugins?.["iconic"]?.settings?.fileIcons;
+        let directories = Object.values(_app.vault.getAllFolders(false)).map(
+          (fi) => {
             return {
               name: fi.name,
               path: fi.path,
               icon: iconicPluginSettings?.[fi.path]?.icon ?? "folder",
             };
-          });
+          }
+        );
         callback(params["x-success"], directories);
       };
     },
@@ -79,17 +89,15 @@ export const routes = [
     path: "/vault/info",
     params: [],
     method: "GET",
-    handler: (app: ActualApp) => {
+    handler: (_app: ActualApp) => {
       return async (params: any) => {
-        let hasPeriodicNotes = app.plugins.enabledPlugins.has("periodic-notes");
+        let hasPeriodicNotes =
+          _app.plugins.enabledPlugins.has("periodic-notes");
         console.log("hasPeriodicNotes", hasPeriodicNotes);
-        let vaultName = app.vault.getName();
-        let actualInfo = app.vault.config;
-        console.log("actualInfo", actualInfo);
-
+        let vaultName = _app.vault.getName();
         let returnInfo = {
           name: vaultName,
-          id: app.appId,
+          id: _app.appId,
         };
         callback(params["x-success"], returnInfo);
       };
@@ -99,16 +107,16 @@ export const routes = [
     path: "/templates",
     params: [],
     method: "GET",
-    handler: (app: ActualApp) => {
+    handler: (_app: ActualApp) => {
       return async (params: any) => {
         let pre_templates =
-          app.plugins.plugins?.["templater-obsidian"]?.settings
+          _app.plugins.plugins?.["templater-obsidian"]?.settings
             ?.folder_templates;
         let templates = pre_templates.map((template: any) => {
           return {
             path: template.folder,
             file: template.template,
-            properties: app.metadataCache.getCache(template.template)
+            properties: _app.metadataCache.getCache(template.template)
               ?.frontmatter,
           };
         });
@@ -121,7 +129,7 @@ export const routes = [
     path: "/capture/page",
     params: ["path", "data"],
     method: "GET",
-    handler: (app: ActualApp) => {
+    handler: (_app: ActualApp) => {
       return async (params: any) => {
         try {
           let pathy: string = "";
@@ -136,7 +144,7 @@ export const routes = [
           datay = params.data;
           if (!pathy && !filey && !datay) return;
           let filePathFull = pathy + "/" + filey;
-          await app.vault.create(filePathFull, datay);
+          await _app.vault.create(filePathFull, datay);
           // let createdFileUrl = encodeURIComponent(`obsidian://open?vault=${app.vault.getName()}&file=${createdFile.path}`);
           // callback(params["x-success"], createdFileUrl);
           // // if (params.openBehavior === "openInObsidian") {
