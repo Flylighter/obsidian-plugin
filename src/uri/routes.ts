@@ -144,13 +144,15 @@ export const routes = [
           datay = params.data;
           if (!pathy && !filey && !datay) return;
           let filePathFull = pathy + "/" + filey;
-          await _app.vault.create(filePathFull, datay);
-          // let createdFileUrl = encodeURIComponent(`obsidian://open?vault=${app.vault.getName()}&file=${createdFile.path}`);
-          // callback(params["x-success"], createdFileUrl);
-          // // if (params.openBehavior === "openInObsidian") {
-          // //   app.workspace.getMostRecentLeaf()?.openFile(createdFile)
-          // // }
-        } catch (e) {}
+          let createdFile =await _app.vault.create(filePathFull, datay);
+          let createdFileUrl = encodeURIComponent(`obsidian://open?vault=${_app.vault.getName()}&file=${createdFile.path}`);
+          callback(params["x-success"], createdFileUrl);
+          if (params.openBehavior === "openInObsidian") {
+            _app.workspace.getMostRecentLeaf()?.openFile(createdFile)
+          }
+        } catch (e) {
+          callback(params["x-error"], e);
+        }
       };
     },
   },
