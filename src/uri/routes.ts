@@ -144,11 +144,50 @@ export const routes = [
           datay = params.data;
           if (!pathy && !filey && !datay) return;
           let filePathFull = pathy + "/" + filey;
-          let createdFile =await _app.vault.create(filePathFull, datay);
-          let createdFileUrl = encodeURIComponent(`obsidian://open?vault=${_app.vault.getName()}&file=${createdFile.path}`);
+          let createdFile = await _app.vault.create(filePathFull, datay);
+          let createdFileUrl = encodeURIComponent(
+            `obsidian://open?vault=${_app.vault.getName()}&file=${
+              createdFile.path
+            }`
+          );
           callback(params["x-success"], createdFileUrl);
           if (params.openBehavior === "openInObsidian") {
-            _app.workspace.getMostRecentLeaf()?.openFile(createdFile)
+            _app.workspace.getMostRecentLeaf()?.openFile(createdFile);
+          }
+        } catch (e) {
+          callback(params["x-error"], e);
+        }
+      };
+    },
+  },
+  {
+    path: "/capture/append",
+    params: ["path", "data"],
+    method: "GET",
+    handler: (_app: ActualApp) => {
+      return async (params: any) => {
+        try {
+          let pathy: string = "";
+          let filey: string = "";
+          let datay: string = "";
+          if (params.pathy) {
+            pathy = decodeURIComponent(params.pathy);
+          }
+          if (params.file) {
+            filey = decodeURIComponent(params.file);
+          }
+          datay = params.data;
+          if (!pathy && !filey && !datay) return;
+          let filePathFull = _app.vault.getFileByPath(pathy + "/" + filey);
+          let createdFile = await _app.vault.append(filePathFull, datay);
+          let createdFileUrl = encodeURIComponent(
+            `obsidian://open?vault=${_app.vault.getName()}&file=${
+              filePathFull.path
+            }`
+          );
+          callback(params["x-success"], createdFileUrl);
+          if (params.openBehavior === "openInObsidian") {
+            _app.workspace.getMostRecentLeaf()?.openFile(filePathFull);
           }
         } catch (e) {
           callback(params["x-error"], e);

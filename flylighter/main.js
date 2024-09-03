@@ -160,6 +160,7 @@ var routes = [
     method: "GET",
     handler: (_app) => {
       return async (params) => {
+        var _a;
         try {
           let pathy = "";
           let filey = "";
@@ -174,8 +175,14 @@ var routes = [
           if (!pathy && !filey && !datay)
             return;
           let filePathFull = pathy + "/" + filey;
-          await _app.vault.create(filePathFull, datay);
+          let createdFile = await _app.vault.create(filePathFull, datay);
+          let createdFileUrl = encodeURIComponent(`obsidian://open?vault=${_app.vault.getName()}&file=${createdFile.path}`);
+          callback(params["x-success"], createdFileUrl);
+          if (params.openBehavior === "openInObsidian") {
+            (_a = _app.workspace.getMostRecentLeaf()) == null ? void 0 : _a.openFile(createdFile);
+          }
         } catch (e) {
+          callback(params["x-error"], e);
         }
       };
     }
