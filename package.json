@@ -1,6 +1,6 @@
 {
   "name": "flylighter-obsidian",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "A companion plugin for the web-clipper Flylighter",
   "main": "main.js",
   "scripts": {
