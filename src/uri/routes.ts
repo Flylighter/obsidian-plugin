@@ -13,6 +13,7 @@ export const routes = [
     handler: (app: ActualApp) => {
       return async (params: any) => {
         console.log("params", params);
+        console.log("app",app)
         let tags = app.metadataCache.getTags();
         callback(params["x-success"], tags);
       };
@@ -24,7 +25,7 @@ export const routes = [
     method: "GET",
     handler: (app: ActualApp) => {
       return async (params: any) => {
-        let files = Object.values(app.metadataCache.vault.fileMap) as ActualTFile[];
+        let files = Object.values(app.vault.getMarkdownFiles()) as ActualTFile[];
         for (let file of files) {
           file.parent = null;
           file.vault = null;
@@ -40,11 +41,14 @@ export const routes = [
     method: "GET",
     handler: (app: ActualApp) => {
       return async (params: any) => {
+        let cachedPropertyOptions: Record<string, any> = {}
         let properties = app.metadataCache.getAllPropertyInfos();
         let propertiesWithOptions = Object.values(properties).map((prop) => {
+          if (cachedPropertyOptions['prop.name']) return { ...prop, options: cachedPropertyOptions['prop.name'] }
           let options = app.metadataCache.getFrontmatterPropertyValuesForKey(
             prop.name
           );
+          if (options) cachedPropertyOptions[prop.name] = options
           return { ...prop, options };
         });
         callback(params["x-success"], propertiesWithOptions);
@@ -59,7 +63,7 @@ export const routes = [
       return async (params: any) => {
         let iconicPluginSettings =
           app.plugins.plugins?.["iconic"]?.settings?.fileIcons;
-        let directories = Object.values(app.vault.getAllFolders())
+        let directories = Object.values(app.vault.getAllFolders(false))
           .map((fi) => {
             return {
               name: fi.name,
@@ -79,8 +83,6 @@ export const routes = [
       return async (params: any) => {
         let hasPeriodicNotes = app.plugins.enabledPlugins.has("periodic-notes");
         console.log("hasPeriodicNotes", hasPeriodicNotes);
-        let vaultInfo = app.vault.getConfig();
-        console.log("vaultInfo", vaultInfo);
         let vaultName = app.vault.getName();
         let actualInfo = app.vault.config;
         console.log("actualInfo", actualInfo);
