@@ -112,6 +112,10 @@ export const routes = [
         let pre_templates =
           _app.plugins.plugins?.["templater-obsidian"]?.settings
             ?.folder_templates;
+        if (!pre_templates) {
+          callback(params["x-success"], []);
+          return;
+        }
         let templates = pre_templates.map((template: any) => {
           return {
             path: template.folder,
