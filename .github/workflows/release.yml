@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - main  # Change to the branch you want to trigger on merge
+      - main
 
 jobs:
   build:
@@ -11,19 +11,19 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
-        node-version: '16'
+        node-version: '20'
 
     - name: Install dependencies
-      run: npm install
+      run: npm ci
 
     - name: Get version
       id: extract_version
-      run: echo "::set-output name=version::$(jq -r '.version' manifest.json)"
+      run: echo "version=$(jq -r '.version' manifest.json)" >> $GITHUB_OUTPUT
 
     - name: Build plugin
       run: node esbuild.config.mjs production
@@ -37,11 +37,10 @@ jobs:
 
     - name: Zip build folder
       run: |
-        version=${{ steps.extract_version.outputs.version }}
-        zip -r "flylighter_obsidian-plugin_${version}.zip" flylighter
+        zip -r "flylighter_obsidian-plugin_${{ steps.extract_version.outputs.version }}.zip" flylighter
 
     - name: Upload build artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: build-zip
         path: flylighter_obsidian-plugin_${{ steps.extract_version.outputs.version }}.zip
@@ -52,25 +51,20 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
+      uses: actions/checkout@v4
 
     - name: Download build artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: build-zip
 
     - name: Get version
       id: extract_version
-      run: echo "::set-output name=version::$(jq -r '.version' manifest.json)"
+      run: echo "version=$(jq -r '.version' manifest.json)" >> $GITHUB_OUTPUT
 
     - name: Get merge commit messages
       id: get_commits
-      run: echo "::set-output name=commits::$(git log --merges -1 --pretty=format:'%b')"
+      run: echo "commits=$(git log --merges -1 --pretty=format:'%b')" >> $GITHUB_OUTPUT
 
     - name: Create Release
       id: create_release
@@ -87,7 +81,6 @@ jobs:
         prerelease: false
 
     - name: Upload release asset
-      id: upload-release-asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
