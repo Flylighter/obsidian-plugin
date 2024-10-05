@@ -116,6 +116,7 @@ export const routes = [
           callback(params["x-success"], []);
           return;
         }
+        
         let templates = pre_templates.map((template: any) => {
           return {
             path: template.folder,
